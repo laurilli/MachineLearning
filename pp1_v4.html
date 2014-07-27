@@ -136,74 +136,74 @@ library(FSelector)</code></pre>
 
 factorsImp</code></pre>
 <pre><code>##                      attr_importance
-## roll_belt                      79.54
-## pitch_belt                     77.27
-## yaw_belt                       88.44
-## total_accel_belt               24.68
-## gyros_belt_x                   40.38
-## gyros_belt_y                   29.70
-## gyros_belt_z                   46.32
-## accel_belt_x                   30.22
-## accel_belt_y                   24.22
-## accel_belt_z                   38.86
-## magnet_belt_x                  49.21
-## magnet_belt_y                  43.04
-## magnet_belt_z                  43.85
-## roll_arm                       50.99
-## pitch_arm                      35.97
-## yaw_arm                        43.56
-## total_accel_arm                39.53
-## gyros_arm_x                    39.61
-## gyros_arm_y                    55.10
-## gyros_arm_z                    37.90
-## accel_arm_x                    28.37
-## accel_arm_y                    39.58
-## accel_arm_z                    31.71
-## magnet_arm_x                   27.92
-## magnet_arm_y                   27.86
-## magnet_arm_z                   41.36
-## roll_dumbbell                  45.97
-## pitch_dumbbell                 24.76
-## yaw_dumbbell                   42.01
-## total_accel_dumbbell           40.41
-## gyros_dumbbell_x               50.65
-## gyros_dumbbell_y               36.93
-## gyros_dumbbell_z               53.87
-## accel_dumbbell_x               34.97
-## accel_dumbbell_y               50.91
-## accel_dumbbell_z               46.95
-## magnet_dumbbell_x              41.87
-## magnet_dumbbell_y              61.75
-## magnet_dumbbell_z              72.69
-## roll_forearm                   44.44
-## pitch_forearm                  59.72
-## yaw_forearm                    43.58
-## total_accel_forearm            38.01
-## gyros_forearm_x                42.97
-## gyros_forearm_y                43.91
-## gyros_forearm_z                48.81
-## accel_forearm_x                37.93
-## accel_forearm_y                41.36
-## accel_forearm_z                42.52
-## magnet_forearm_x               31.99
-## magnet_forearm_y               43.32
-## magnet_forearm_z               49.99</code></pre>
+## roll_belt                      79.89
+## pitch_belt                     75.24
+## yaw_belt                       88.26
+## total_accel_belt               26.74
+## gyros_belt_x                   37.95
+## gyros_belt_y                   29.28
+## gyros_belt_z                   46.71
+## accel_belt_x                   29.98
+## accel_belt_y                   25.17
+## accel_belt_z                   40.68
+## magnet_belt_x                  47.76
+## magnet_belt_y                  42.83
+## magnet_belt_z                  42.31
+## roll_arm                       51.59
+## pitch_arm                      38.01
+## yaw_arm                        44.09
+## total_accel_arm                37.77
+## gyros_arm_x                    41.99
+## gyros_arm_y                    54.31
+## gyros_arm_z                    34.53
+## accel_arm_x                    28.98
+## accel_arm_y                    39.44
+## accel_arm_z                    31.04
+## magnet_arm_x                   26.75
+## magnet_arm_y                   26.40
+## magnet_arm_z                   41.89
+## roll_dumbbell                  42.88
+## pitch_dumbbell                 24.17
+## yaw_dumbbell                   40.41
+## total_accel_dumbbell           40.82
+## gyros_dumbbell_x               45.77
+## gyros_dumbbell_y               37.17
+## gyros_dumbbell_z               55.19
+## accel_dumbbell_x               35.18
+## accel_dumbbell_y               51.98
+## accel_dumbbell_z               49.00
+## magnet_dumbbell_x              42.33
+## magnet_dumbbell_y              62.11
+## magnet_dumbbell_z              74.94
+## roll_forearm                   44.71
+## pitch_forearm                  57.77
+## yaw_forearm                    43.54
+## total_accel_forearm            37.43
+## gyros_forearm_x                41.20
+## gyros_forearm_y                47.24
+## gyros_forearm_z                45.25
+## accel_forearm_x                38.62
+## accel_forearm_y                44.66
+## accel_forearm_z                44.37
+## magnet_forearm_x               33.19
+## magnet_forearm_y               40.55
+## magnet_forearm_z               51.28</code></pre>
 <pre class="r"><code>factorsSubset &lt;- cutoff.k(factorsImp, 15)   
 
 factorsSubset</code></pre>
 <pre><code>##  [1] &quot;yaw_belt&quot;          &quot;roll_belt&quot;         &quot;pitch_belt&quot;       
 ##  [4] &quot;magnet_dumbbell_z&quot; &quot;magnet_dumbbell_y&quot; &quot;pitch_forearm&quot;    
-##  [7] &quot;gyros_arm_y&quot;       &quot;gyros_dumbbell_z&quot;  &quot;roll_arm&quot;         
-## [10] &quot;accel_dumbbell_y&quot;  &quot;gyros_dumbbell_x&quot;  &quot;magnet_forearm_z&quot; 
-## [13] &quot;magnet_belt_x&quot;     &quot;gyros_forearm_z&quot;   &quot;accel_dumbbell_z&quot;</code></pre>
+##  [7] &quot;gyros_dumbbell_z&quot;  &quot;gyros_arm_y&quot;       &quot;accel_dumbbell_y&quot; 
+## [10] &quot;roll_arm&quot;          &quot;magnet_forearm_z&quot;  &quot;accel_dumbbell_z&quot; 
+## [13] &quot;magnet_belt_x&quot;     &quot;gyros_forearm_y&quot;   &quot;gyros_belt_z&quot;</code></pre>
 <p>After have a look to the result, I have choosen the 15 first best features, with have an importance weight over 49.0. I will keep the rest of the result in the case I need to choose a larger set of features.</p>
 </div>
 <div id="building-the-prediction-model" class="section level3">
 <h3>Building the Prediction Model</h3>
 <p>Random Forest should be a good option to fit this classification problem, with already debugged data. I count with a set of 15 balanced features, that may perform well with Random Forest model, as they has been selected using Random Forest Importance method.</p>
-<pre class="r"><code>set.seed(33832)</code></pre>
 <p>First the data is splitted, to have a training and a validation set, to let the model be tested against unseen data an have and idea of its level of generalization.</p>
-<pre class="r"><code>inTrain &lt;- createDataPartition(depuredTraining$classe, p=0.70, list=FALSE)
+<pre class="r"><code>set.seed(33832)
+inTrain &lt;- createDataPartition(depuredTraining$classe, p=0.70, list=FALSE)
 training &lt;- depuredTraining[inTrain, ]
 validating &lt;- depuredTraining[-inTrain, ]</code></pre>
 <p>Then, Random Forest will be used to create the model, with the option of “Cross-Validation” for resampling: <code>trainControl(&quot;cv&quot;, 10)</code>, that means cross-validation with 10-folds. I will use the boost option of <code>n.trees=10</code> too, which use the average of k trees (10 in this case) to produce a final model. This is a way to avoid the overfitting problem, and be more confident it will predict better on new data.</p>
@@ -237,9 +237,9 @@ model &lt;- train(classe~., data=training[,factorsSubsetWithResult], method=&quo
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
-##   2     1         1      0.004        0.005   
-##   8     1         1      0.004        0.005   
-##   20    1         1      0.003        0.004   
+##   2     1         1      0.003        0.003   
+##   8     1         1      0.003        0.004   
+##   20    1         1      0.002        0.003   
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 2.</code></pre>
@@ -288,16 +288,16 @@ confusionMatrix(predictValidating, validating$classe)</code></pre>
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1670   14    0    0    0
-##          B    1 1107    9    0    1
-##          C    3   16 1012    7    5
-##          D    0    2    5  955    2
-##          E    0    0    0    2 1074
+##          A 1669   13    0    0    0
+##          B    2 1108    8    0    0
+##          C    2   15 1012    7    3
+##          D    1    2    6  955    2
+##          E    0    1    0    2 1077
 ## 
 ## Overall Statistics
 ##                                         
 ##                Accuracy : 0.989         
-##                  95% CI : (0.986, 0.991)
+##                  95% CI : (0.986, 0.992)
 ##     No Information Rate : 0.284         
 ##     P-Value [Acc &gt; NIR] : &lt;2e-16        
 ##                                         
@@ -307,15 +307,15 @@ confusionMatrix(predictValidating, validating$classe)</code></pre>
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity             0.998    0.972    0.986    0.991    0.993
-## Specificity             0.997    0.998    0.994    0.998    1.000
-## Pos Pred Value          0.992    0.990    0.970    0.991    0.998
-## Neg Pred Value          0.999    0.993    0.997    0.998    0.998
+## Sensitivity             0.997    0.973    0.986    0.991    0.995
+## Specificity             0.997    0.998    0.994    0.998    0.999
+## Pos Pred Value          0.992    0.991    0.974    0.989    0.997
+## Neg Pred Value          0.999    0.993    0.997    0.998    0.999
 ## Prevalence              0.284    0.194    0.174    0.164    0.184
-## Detection Rate          0.284    0.188    0.172    0.162    0.182
-## Detection Prevalence    0.286    0.190    0.177    0.164    0.183
-## Balanced Accuracy       0.997    0.985    0.990    0.994    0.996</code></pre>
-<p>As expected, the accuracy is a bit lower, but is still good on 98.84%, and the Sensitivity and specificity on the prediction classes is over 97.7%, that means it is a model which generalize very good on new samples.</p>
+## Detection Rate          0.284    0.188    0.172    0.162    0.183
+## Detection Prevalence    0.286    0.190    0.177    0.164    0.184
+## Balanced Accuracy       0.997    0.985    0.990    0.994    0.997</code></pre>
+<p>As expected, the accuracy is a bit lower, but is still good on 98.8%, and the Sensitivity and specificity on the prediction classes is over 97.7%, that means it is a model which generalize very good on new samples.</p>
 </div>
 <div id="evaluation-over-the-testing" class="section level3">
 <h3>Evaluation over the Testing</h3>
