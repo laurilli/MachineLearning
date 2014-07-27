@@ -1,0 +1,138 @@
+---
+title: "Practical Machine Learning Course, Final Project Write Up"
+author: "Elenssar (L. D.) <elenssar21@gmail.com>"
+output: html_document
+---
+Project Objective: Analysis of Fitness Exercise Correctness problem and building of a predictive model.
+
+### Objective
+The objective of the model is to predict the quality of how well somebody do an especific weight lifting exercise, based on the results of some devices and statistics calculations derived from them over a window time (mean, variance, skewness, kurtosis, etc). This is a classification problem, where the prediction is one of the 5 levels of the excercise performance: A, B, C, D and E.
+
+### Loading and Preparing the Data set
+Loading the dataset into training and testing variables.
+
+```{r, message=FALSE}
+library(gdata)
+setwd("C:/Machine Learning/Course II")
+trainingdataOriginal = read.csv("pml-training.csv")
+testingdataOriginal = read.csv("pml-testing.csv")
+```
+
+As the prediction should be done, no matter who is the person doing it, the user name won't be taken in count as a predictor.
+The window time has been used for calculate extra factors, as mentioned in the paper describing the problem [1], so the time is not adding any extra valuable information anymore: `cvtd_timestamp`, `raw_timestamp_part_1`, `raw_timestamp_part_2`, `new_window` and `num_window`. The analysis will be done over the remining features:
+
+```{r, message=FALSE}
+trainingReduced<-trainingdataOriginal[,8:160]
+```
+
+###Analysing of the Training Data
+Now, the remaining factors have to be analysed to select a subset of predictors that give the most information possible to the result.
+First, using summary command help us to have a look of the data values and factors distribution: (For space on this document, It is displayed only the first 10 columns)
+
+```{r, message=FALSE}
+sm<-summary(trainingReduced)
+sm[,1:10]
+``` 
+
+It can be found two main problems with the data. The first problem is the "missing values", which R manage as NA, which are not numeric (can't be compared) and are not factors. This will be a problem for most of statistics functions. I have decided to eliminate the features which contains any missing value.
+
+```{r}
+trainingWithoutNA<-trainingReduced[, !apply(is.na(trainingReduced), 2, any)]
+```
+
+The second problem is that it can be seen highly unbalance features, some of them only have an unique value for all samples, so they do not add any information to the prediction or they can produce an undue influence on the model (for example `kurtosis_yaw_belt` or `skewness_yaw_belt`) This kind of predictors are called "near zero variance". The balanced predictors are more appropiated for a classification problem if we want to use decision trees, as they will split better and faster the whole data. These unbalanced features can be detected by using `nearZeroVar` function from caret library:
+ 
+```{r, message=FALSE}
+library(caret)
+nzv <- nearZeroVar(trainingWithoutNA, saveMetrics = TRUE)
+nzv[1:10,]
+```
+
+The factors which column `nzv` is TRUE are the ones we do not want in the training.
+
+```{r}
+nzv <- nearZeroVar(trainingWithoutNA)
+
+depuredTraining<-trainingWithoutNA[,-nzv]
+
+dim(depuredTraining)
+```
+
+Now, we have a dataset with 52 predictors. For the next step I will use the FSelector package to select the best subset features for a classification using the random forest variable importance selector, with importance type 1 (mean decrease in accuracy) for better generalization on new data.
+
+Note: To load FSelector without problems, use Sys.setenv(JAVA_HOME="") command if you have Java enviroment variable set on Windows.
+
+```{r, message=FALSE}
+Sys.setenv(JAVA_HOME="")
+
+library(FSelector)
+
+factorsImp<-random.forest.importance(classe~., data=depuredTraining, importance.type=1)
+
+factorsImp
+
+factorsSubset <- cutoff.k(factorsImp, 15)   
+
+factorsSubset
+```
+
+After have a look to the result, I have choosen the 15 first best features, with have an importance weight over 49.0. I will keep the rest of the result in the case I need to choose a larger set of features.
+ 
+### Building the Prediction Model
+Random Forest should be a good option to fit this classification problem, with already debugged data. I count with a set of 15 balanced features, that may perform well with Random Forest model, as they has been selected using Random Forest Importance method. 
+
+```{r}
+set.seed(33832)
+```
+
+First the data is splitted, to have a training and a validation set, to let the model be tested against unseen data an have and idea of its level of generalization.
+
+Then, Random Forest will be used to create the model, with the option of "Cross-Validation" for resampling: `trainControl("cv", 10)`, that means cross-validation with 10-folds. 
+I will use the boost option of `n.trees=10` too, which use the average of k trees (10 in this case) to produce a final model. This is a way to avoid the overfitting problem, and be more confident it will predict better on new data.
+
+```{r, message=FALSE}
+inTrain <- createDataPartition(depuredTraining$classe, p=0.70, list=FALSE)
+training <- depuredTraining[inTrain, ]
+validating <- depuredTraining[-inTrain, ]
+```
+Adding the result variable to the subset and training:
+```{r}
+factorsSubsetWithResult<-factorsSubset
+
+factorsSubsetWithResult[16] = "classe"
+
+model <- train(classe~., data=training[,factorsSubsetWithResult], method="rf",trControl=trainControl("cv", 10), n.trees=10)
+
+model
+```
+As a result, it has been a model of a 99% accuracy, this means that it is fitting the whole training set.
+
+### Model Evaluation, Performance
+To Evaluate the performance of the resulting model, I am using the confusion matrix. Let's check how well it fit the training data:
+
+```{r}
+predictTraining<-predict(model, training[,factorsSubsetWithResult])
+confusionMatrix(predictTraining, training$classe)
+```
+It has an accuracy of 99.97% on the training data, classifying perfect the whole training set. Despite the training has been done with "cross-validation", I would like to check my own validation set to confirm my model is not overfitting the training. Let's see over the validating set:
+
+```{r}
+predictValidating<-predict(model, validating[,factorsSubsetWithResult])
+confusionMatrix(predictValidating, validating$classe)
+```
+As expected, the accuracy is a bit lower, but is still good on 98.84%, and the Sensitivity and specificity on the prediction classes is over 97.7%, that means it is a model which generalize very good on new samples.
+
+### Evaluation over the Testing
+With this results, I expect the model finally built following this process will fit most of the testing data provided, in the pessimistic side I would say 97.7% (the lowest sensitivity on Class B), which means 20*.977=19.54 samples of 20. The model could predict the whole testing set.
+
+The prediction Resulting with the provided testing data is:
+
+```{r}
+answers<-predict(model, testingdataOriginal[,factorsSubset])
+answers
+```
+
+
+
+
+[1] http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf
